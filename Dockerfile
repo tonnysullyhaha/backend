@@ -24,10 +24,10 @@ RUN		apt-get update && apt-get install -y \
         vim
 
 RUN     pecl install redis
-RUN     echo 'extension=redis.so' > /etc/php5/fpm/conf.d/redis.ini
 
 EXPOSE  9000
 CMD     php5-fpm -F
 
 RUN     unlink /etc/php5/fpm/pool.d/www.conf
 ADD     scripts/php-fpm-pool.conf /etc/php5/fpm/pool.d/unsee.conf
+ADD     scripts/unsee.ini /etc/php5/fpm/conf.d/unsee.ini
