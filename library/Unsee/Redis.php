@@ -99,12 +99,8 @@ class Unsee_Redis
     {
         $type = $useMaster ? 'Master' : 'Slave';
         $server = 'redis' . $type;
-        $dbVar = 'prevDb' . $type;
 
-        if (self::${$dbVar} !== static::DB) {
-            $this->$server->select(static::DB);
-            self::${$dbVar} = static::DB;
-        }
+        $this->$server->select(static::DB);
 
         return true;
     }
