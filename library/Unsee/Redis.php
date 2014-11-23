@@ -11,15 +11,25 @@ class Unsee_Redis
     const DB = 0;
 
     /**
-     * @var int Id of previously used database
+     * @var int Id of previously used database on Master
      */
-    static $prevDb = 0;
+    static $prevDbMaster = 0;
+    
+    
+    /**
+     * @var int Id of previously used database on Slave
+     */
+    static $prevDbSlave = 0;
 
     /**
      * @var Redis Redis object
      */
-    private $redis;
+    private $redisMaster;
 
+    /**
+     * @var Redis Redis object
+     */
+    private $redisSlave;
     /**
      * @var string Key of Redis hash field
      */
@@ -31,7 +41,8 @@ class Unsee_Redis
      */
     public function __construct($key = null)
     {
-        $this->redis = Zend_Registry::get('Redis');
+        $this->redisMaster = Zend_Registry::get('RedisMaster');
+        $this->redisSlave = Zend_Registry::get('RedisSlave');
         $this->key = $key;
     }
 
@@ -42,8 +53,8 @@ class Unsee_Redis
      */
     public function __isset($key)
     {
-        $this->selectDb();
-        return $this->redis->hExists($this->key, $key);
+        $this->selectDb(false);
+        return $this->redisSlave->hExists($this->key, $key);
     }
 
     /**
@@ -54,7 +65,7 @@ class Unsee_Redis
     public function __unset($key)
     {
         $this->selectDb();
-        return $this->redis->hDel($this->key, $key);
+        return $this->redisMaster->hDel($this->key, $key);
     }
 
     /**
@@ -64,8 +75,8 @@ class Unsee_Redis
      */
     public function __get($hKey)
     {
-        $this->selectDb();
-        return $this->redis->hGet($this->key, $hKey);
+        $this->selectDb(false);
+        return $this->redisSlave->hGet($this->key, $hKey);
     }
 
     /**
@@ -77,18 +88,22 @@ class Unsee_Redis
     public function __set($hKey, $value)
     {
         $this->selectDb();
-        return $this->redis->hSet($this->key, $hKey, $value);
+        return $this->redisMaster->hSet($this->key, $hKey, $value);
     }
 
     /**
      * Sets the current database id to operate on
      * @return boolean
      */
-    private function selectDb()
+    private function selectDb($useMaster = true)
     {
-        if (self::$prevDb !== static::DB) {
-            $this->redis->select(static::DB);
-            self::$prevDb = static::DB;
+        $type = $useMaster ? 'Master' : 'Slave';
+        $server = 'redis' . $type;
+        $dbVar = 'prevDb' . $type;
+
+        if (self::${$dbVar} !== static::DB) {
+            $this->$server->select(static::DB);
+            self::${$dbVar} = static::DB;
         }
 
         return true;
@@ -105,8 +120,8 @@ class Unsee_Redis
             $key = $this->key;
         }
 
-        $this->selectDb();
-        return $this->redis->hLen($this->key) > 0;
+        $this->selectDb(false);
+        return $this->redisSlave->hLen($this->key) > 0;
     }
 
     /**
@@ -116,7 +131,7 @@ class Unsee_Redis
     public function delete()
     {
         $this->selectDb();
-        return $this->redis->delete($this->key);
+        return $this->redisMaster->delete($this->key);
     }
 
     /**
@@ -125,8 +140,8 @@ class Unsee_Redis
      */
     public function export()
     {
-        $this->selectDb();
-        return $this->redis->hGetAll($this->key);
+        $this->selectDb(false);
+        return $this->redisSlave->hGetAll($this->key);
     }
 
     /**
@@ -138,26 +153,26 @@ class Unsee_Redis
     public function increment($key, $num = 1)
     {
         $this->selectDb();
-        return $this->redis->hIncrBy($this->key, $key, $num);
+        return $this->redisMaster->hIncrBy($this->key, $key, $num);
     }
 
     public function expireAt($time)
     {
         $this->selectDb();
-        return $this->redis->expireAt($this->key, $time);
+        return $this->redisMaster->expireAt($this->key, $time);
     }
 
     public function ttl()
     {
         $this->selectDb();
-        return $this->redis->ttl($this->key);
+        return $this->redisMaster->ttl($this->key);
     }
 
     public static function keys($keys)
     {
-        $redis = Zend_Registry::get('Redis');
+        $redis = Zend_Registry::get('RedisSlave');
         $redis->select(static::DB);
-        self::$prevDb = static::DB;
+        self::$prevDbSlave = static::DB;
 
         return $redis->keys($keys);
     }

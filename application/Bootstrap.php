@@ -79,10 +79,29 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
      */
     protected function _initDb()
     {
-        $dbConf = Zend_Registry::get('config')->redis->toArray();
+        $redisServers = Zend_Registry::get('config')->redis->servers;
+
+        // Both Redis instances would be one master server
+        $redisMasterConfig = $redisSlaveConfig = $redisServers->{$redisServers->master};
+
+        if (isset($_SERVER['GEOIP_CONTINENT'])) {
+            $targetConfig = $redisServers->{'redis-' . $_SERVER['GEOIP_CONTINENT']};
+            if ($targetConfig) {
+                $redisSlaveConfig = $targetConfig;
+            }
+        }
 
         $redis = new Redis();
-        $redis->connect($dbConf['host'], $dbConf['port']);
-        Zend_Registry::set('Redis', $redis);
+        $redis->connect($redisMasterConfig->host, $redisMasterConfig->port);
+
+        Zend_Registry::set('RedisMaster', $redis);
+
+        if ($redisMasterConfig === $redisSlaveConfig) {
+            Zend_Registry::set('RedisSlave', $redis);
+        } else {
+            $redis = new Redis();
+            $redis->connect($redisSlaveConfig->host, $redisSlaveConfig->port);
+            Zend_Registry::set('RedisSlave', $redis);
+        }
     }
 }
