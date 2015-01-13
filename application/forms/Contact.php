@@ -5,7 +5,6 @@
  */
 class Application_Form_Contact extends Zend_Form
 {
-
     public function init()
     {
         $this->setMethod('post');
@@ -33,8 +32,6 @@ class Application_Form_Contact extends Zend_Form
         $select->setRequired();
         $this->addElement($select);
 
-
-
         $name = $this->createElement('text', 'name');
         $name->clearDecorators();
         $name->setLabel('name');
@@ -46,8 +43,6 @@ class Application_Form_Contact extends Zend_Form
         $name->setRequired();
         $this->addElement($name);
 
-
-
         $email = $this->createElement('text', 'email');
         $email->clearDecorators();
         $email->setLabel('email');
@@ -58,7 +53,6 @@ class Application_Form_Contact extends Zend_Form
         $email->addFilters(array('StringTrim', 'StripTags'));
         $email->setRequired();
         $this->addElement($email);
-
 
         $message = $this->createElement('textarea', 'message');
         $message->clearDecorators();

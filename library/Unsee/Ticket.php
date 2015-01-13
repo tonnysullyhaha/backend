@@ -10,6 +10,7 @@ class Unsee_Ticket extends Unsee_Redis
 
     /**
      * Titme to live
+     *
      * @var int
      */
     static public $ttl = 86400;
@@ -22,34 +23,43 @@ class Unsee_Ticket extends Unsee_Redis
 
     /**
      * Create a ticket for the current session to access the image id
+     *
      * @param Unsee_Image $imageDoc
+     *
      * @return boolean
      */
     public function issue(Unsee_Image $imageDoc)
     {
         $this->{$imageDoc->key} = time();
+
         return true;
     }
 
     /**
      * Returns true if current session is allowed to access the image
+     *
      * @param Unsee_Image $imageDoc
+     *
      * @return true
      */
     public function isAllowed($imageDoc)
     {
         list($hash) = explode('_', $imageDoc->key);
+
         return isset($this->{$imageDoc->key}) && isset($_COOKIE[md5(Unsee_Session::getCurrent() . $hash)]);
     }
 
     /**
      * Deletes the ticket
+     *
      * @param Unsee_Image $imageDoc
+     *
      * @return boolean
      */
     public function invalidate($imageDoc)
     {
         unset($this->{$imageDoc->key});
+
         return true;
     }
 }

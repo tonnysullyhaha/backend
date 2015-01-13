@@ -5,7 +5,6 @@
  */
 class ContactController extends Zend_Controller_Action
 {
-
     public function init()
     {
         $this->view->headScript()->appendFile('js/vendor/jquery-1.8.3.min.js');
@@ -27,8 +26,7 @@ class ContactController extends Zend_Controller_Action
      */
     public function indexAction()
     {
-        $form = new Application_Form_Contact();
-        $this->view->form = $form;
+        $this->view->form = new Application_Form_Contact();
     }
 
     /**
@@ -36,18 +34,16 @@ class ContactController extends Zend_Controller_Action
      */
     public function sendAction()
     {
-        $res = new stdClass();
-
+        $res  = new stdClass();
         $form = new Application_Form_Contact();
 
         if ($form->isValid($_POST)) {
             $res->success = true;
 
-            $lang = Zend_Registry::get('Zend_Translate');
-
-            $subject = $lang->translate($form->type->getValue());
-            $message = $form->message->getValue();
-            $fromName = $form->name->getValue();
+            $lang      = Zend_Registry::get('Zend_Translate');
+            $subject   = $lang->translate($form->type->getValue());
+            $message   = $form->message->getValue();
+            $fromName  = $form->name->getValue();
             $fromEmail = $form->email->getValue();
 
             $this->sendMail($subject, $message, $fromName, $fromEmail);
@@ -60,7 +56,16 @@ class ContactController extends Zend_Controller_Action
     }
 
     /**
-     * Sends contact email
+     * Sends feedback email
+     *
+     * @param $subject
+     * @param $message
+     * @param $fromName
+     * @param $fromEmail
+     *
+     * @throws Zend_Mail_Exception
+     *
+     * @return Zend_Mail
      */
     private function sendMail($subject, $message, $fromName, $fromEmail)
     {
@@ -76,7 +81,6 @@ class ContactController extends Zend_Controller_Action
         try {
             return $mail->send();
         } catch (Exception $e) {
-            
         }
     }
 }

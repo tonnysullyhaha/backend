@@ -9,7 +9,8 @@ class Unsee_Image extends Unsee_Redis
     const DB = 1;
 
     /**
-     * Image Magick instance
+     * Image Magic instance
+     *
      * @var \imagick
      */
     protected $iMagick;
@@ -21,7 +22,8 @@ class Unsee_Image extends Unsee_Redis
 
     /**
      * Secure link unix time
-     * @var type 
+     *
+     * @var int
      */
     public $secureTtd = 0;
 
@@ -36,7 +38,7 @@ class Unsee_Image extends Unsee_Redis
         parent::__construct($hash->key . '_' . $imgKey);
 
         if ($newImage) {
-            $keys = Unsee_Image::keys($hash->key . '*');
+            $keys      = Unsee_Image::keys($hash->key . '*');
             $this->num = count($keys);
             $this->expireAt(time() + $hash->ttl());
         }
@@ -46,12 +48,12 @@ class Unsee_Image extends Unsee_Redis
 
     /**
      * Sets the params needed for the secure link nginx module to work
+     *
      * @see http://wiki.nginx.org/HttpSecureLinkModule
      * @return boolean
      */
     public function setSecureParams()
     {
-
         $linkTtl = Unsee_Ticket::$ttl;
 
         if (!$this->no_download) {
@@ -66,29 +68,30 @@ class Unsee_Image extends Unsee_Redis
         $md5 = str_replace('=', '', $md5);
 
         $this->secureMd5 = $md5;
+
         return true;
     }
 
     /**
-     * Associates the model with the file
+     * Adds file to the share
+     *
      * @param string $filePath
+     *
      * @return boolean
      */
-    public function setFile($filePath)
+    public function addFile($filePath)
     {
         if (!file_exists($filePath)) {
             return false;
         }
 
-        $info = getimagesize($filePath);
-        $imageWidth = $info[0];
+        $info        = getimagesize($filePath);
+        $imageWidth  = $info[0];
         $imageHeight = $info[1];
-
-        $image = new Imagick();
+        $maxSize     = 1920; // @todo Should be either in config or dynamically set
+        $image       = $this->getImagick();
         $image->readimage($filePath);
-
         $image->setResourceLimit(Imagick::RESOURCETYPE_MEMORY, 1);
-        $maxSize = 1920;
 
         if ($imageWidth > $maxSize && $imageWidth > $imageHeight) {
             $image->thumbnailimage($maxSize, null);
@@ -97,14 +100,16 @@ class Unsee_Image extends Unsee_Redis
         }
 
         $image->setCompression(Imagick::COMPRESSION_JPEG);
+
+        // @todo Should be in config
         $image->setCompressionQuality(80);
 
         $image->stripimage();
 
-        $this->size = filesize($filePath);
-        $this->type = $info['mime'];
-        $this->width = $info[0];
-        $this->height = $info[1];
+        $this->size    = filesize($filePath);
+        $this->type    = $info['mime'];
+        $this->width   = $info[0];
+        $this->height  = $info[1];
         $this->content = $image->getImageBlob();
         $this->expireAt(time() + static::EXP_DAY);
 
@@ -113,13 +118,16 @@ class Unsee_Image extends Unsee_Redis
 
     /**
      * Instantiates and returns Image Magick object
+     *
      * @return \imagick
      */
     protected function getImagick()
     {
         if (!$this->iMagick) {
             $iMagick = new Imagick();
-            $iMagick->readimageblob($this->content);
+            if ($this->content) {
+                $iMagick->readimageblob($this->content);
+            }
             $this->iMagick = $iMagick;
         }
 
@@ -128,27 +136,28 @@ class Unsee_Image extends Unsee_Redis
 
     /**
      * Strips exif data from image body
+     *
      * @return boolean
      */
     public function stripExif()
     {
         $this->getImagick()->stripImage();
+
         return true;
     }
 
     /**
      * Watermars the image with the viewer's IP
+     *
      * @return boolean
      */
     public function watermark()
     {
-        $text = $_SERVER['REMOTE_ADDR'];
-        $font = $_SERVER['DOCUMENT_ROOT'] . '/pixel.ttf';
+        $text  = $_SERVER['REMOTE_ADDR'];
+        $font  = $_SERVER['DOCUMENT_ROOT'] . '/pixel.ttf';
         $image = $this->getImagick();
 
-        $width = $image->getimagewidth();
-
-        $watermark = new Imagick();
+        $watermark = $this->getImagick();
         $watermark->newImage(1000, 1000, new ImagickPixel('none'));
 
         $draw = new ImagickDraw();
@@ -166,7 +175,9 @@ class Unsee_Image extends Unsee_Redis
 
     /**
      * Embeds a comment into the image body
+     *
      * @param string $comment
+     *
      * @return boolean
      */
     public function comment($comment)
@@ -184,6 +195,7 @@ class Unsee_Image extends Unsee_Redis
 
     /**
      * Returns image binary content
+     *
      * @return type
      */
     public function getImageContent()

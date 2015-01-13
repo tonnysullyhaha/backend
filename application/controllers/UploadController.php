@@ -2,13 +2,13 @@
 
 /**
  * Upload controller
- * @todo Use Zend_Form instead of a plain html in view
+ *
  */
 class UploadController extends Zend_Controller_Action
 {
-
     /**
      * Controller to handle file upload form
+     *
      * @throws Exception
      */
     public function indexAction()
@@ -26,7 +26,7 @@ class UploadController extends Zend_Controller_Action
         $upload->addValidator('IsImage', false);
         $upload->addValidator('Size', false, array('max' => '10MB', 'bytestring' => false));
         $translate = Zend_Registry::get('Zend_Translate');
-        $updating = false;
+        $updating  = false;
 
         try {
             if (!$upload->receive()) {
@@ -34,10 +34,9 @@ class UploadController extends Zend_Controller_Action
             } else {
                 $files = $upload->getFileInfo();
 
-
                 // Updating hash with new images
                 if (!empty($_POST['hash']) && Unsee_Hash::isValid($_POST['hash'])) {
-                    $hashDoc = new Unsee_Hash($_POST['hash']);
+                    $hashDoc  = new Unsee_Hash($_POST['hash']);
                     $updating = true;
                     $response = array();
 
@@ -54,37 +53,40 @@ class UploadController extends Zend_Controller_Action
                 $imageAdded = false;
 
                 foreach ($files as $file => $info) {
-                    if ($upload->isUploaded($file)) {
-                        $imgDoc = new Unsee_Image($hashDoc);
-                        $res = $imgDoc->setFile($info['tmp_name']);
-                        $imgDoc->setSecureParams(); //hack to populate correct secureTtd
+                    if (!$upload->isUploaded($file)) {
+                        continue;
+                    }
 
-                        if ($updating) {
-                            $ticket = new Unsee_Ticket();
-                            $ticket->issue($imgDoc);
+                    $imgDoc = new Unsee_Image($hashDoc);
+                    $res    = $imgDoc->addFile($info['tmp_name']);
+                    $imgDoc->setSecureParams(); //@todo: this is a hack to populate correct secureTtd, fix it
 
-                            $newImg = new stdClass();
-                            $newImg->hashKey = $hashDoc->key;
-                            $newImg->key = $imgDoc->key;
-                            $newImg->src = '/image/' . $imgDoc->key . '/' . $imgDoc->secureMd5 . '/' . $imgDoc->secureTtd . '/';
-                            $newImg->width = $imgDoc->width;
-                            $newImg->ticket = md5(Unsee_Session::getCurrent() . $hashDoc->key);
+                    if ($updating) {
+                        $ticket = new Unsee_Ticket();
+                        $ticket->issue($imgDoc);
 
-                            $response[] = $newImg;
-                        }
+                        $newImg          = new stdClass();
+                        $newImg->hashKey = $hashDoc->key;
+                        $newImg->key     = $imgDoc->key;
+                        $newImg->src     = '/image/' . $imgDoc->key . '/' . $imgDoc->secureMd5 . '/' . $imgDoc->secureTtd . '/';
+                        $newImg->width   = $imgDoc->width;
+                        $newImg->ticket  = md5(Unsee_Session::getCurrent() . $hashDoc->key);
 
-                        if ($res) {
-                            $imageAdded = true;
-                        }
+                        $response[] = $newImg;
+                    }
 
-                        // Remove uploaded file from temporary dir if it wasn't removed
-                        if (file_exists($info['tmp_name'])) {
-                            @unlink($info['tmp_name']);
-                        }
+                    if ($res) {
+                        $imageAdded = true;
+                    }
+
+                    // Remove uploaded file from temporary dir if it wasn't removed
+                    if (file_exists($info['tmp_name'])) {
+                        @unlink($info['tmp_name']);
                     }
                 }
 
                 if (!$imageAdded) {
+                    // @todo: translate
                     throw new Exception('No images were added');
                 }
             }
@@ -96,7 +98,9 @@ class UploadController extends Zend_Controller_Action
 
     /**
      * Sets the TTL for the provided hash
+     *
      * @param Unsee_Hash $hashDoc
+     *
      * @return boolean
      */
     private function setExpiration($hashDoc)
@@ -107,7 +111,7 @@ class UploadController extends Zend_Controller_Action
             if ($amount > 0) {
                 // Disable single view, which is ON by default
                 $hashDoc->max_views = 0;
-                $hashDoc->ttl = $_POST['time'];
+                $hashDoc->ttl       = $_POST['time'];
                 // Expire in specified interval, instead of a day
                 $hashDoc->expireAt(time() + $amount);
             }

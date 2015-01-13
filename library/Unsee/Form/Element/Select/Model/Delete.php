@@ -2,14 +2,12 @@
 
 class Unsee_Form_Element_Select_Model_Delete extends Unsee_Form_Element_Select_Model_Abstract
 {
-
     static public function getValues(Zend_Translate $lang)
     {
-        $vars = Unsee_Hash::$ttlTypes;
+        $vars   = Unsee_Hash::$ttlTypes;
         $values = array();
 
         foreach ($vars as $item) {
-
             $elLangString = 'settings_delete_ttl_' . $item;
 
             if ($lang->isTranslated($elLangString)) {

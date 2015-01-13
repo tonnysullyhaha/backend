@@ -8,7 +8,7 @@ $envFile = APPLICATION_PATH . '/configs/env.php';
 file_exists($envFile) && include $envFile;
 
 if (!defined('APPLICATION_ENV')) {
-    define('APPLICATION_ENV', getenv('APPLICATION_ENV') ? : 'production');
+    define('APPLICATION_ENV', getenv('APPLICATION_ENV') ?: 'production');
 }
 
 // Ensure library/ is on include_path

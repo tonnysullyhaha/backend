@@ -20,6 +20,7 @@ class ViewController extends Zend_Controller_Action
     {
         // This page should never be indexed by robots
         $this->getResponse()->setHeader('X-Robots-Tag', 'noindex');
+
         $this->view->headScript()->appendFile('js/vendor/jquery-1.8.3.min.js');
         $this->view->headScript()->appendFile('js/vendor/jquery.visibility.js');
         $this->view->headScript()->appendFile('js/vendor/jquery.iframe-transport.js');
@@ -41,8 +42,12 @@ class ViewController extends Zend_Controller_Action
 
     /**
      * Process image sharing settings form
-     * @param Zend_Form $form
+     *
+     * @param Zend_Form  $form
      * @param Unsee_Hash $hashDoc
+     *
+     * @todo  Refactor
+     *
      * @return boolean
      */
     private function handleSettingsFormSubmit($form, $hashDoc)
@@ -52,49 +57,52 @@ class ViewController extends Zend_Controller_Action
             return false;
         }
 
-        if ($form->isValid($_POST)) {
-            $values = $form->getValues();
+        if (!$form->isValid($_POST)) {
+            return false;
+        }
 
-            // Changed value of TTL
-            if (isset($values['ttl']) && $hashDoc->ttl === Unsee_Hash::$ttlTypes[0]) {
-                // Revert no_download to the value from DB, since there's no way
-                // it could have changed. It's disabled when ttl == 'first'.
-                unset($values['no_download']);
+        $values = $form->getValues();
+
+        // Changed value of TTL
+        if (isset($values['ttl']) && $hashDoc->ttl === Unsee_Hash::$ttlTypes[0]) {
+            // Revert no_download to the value from DB, since there's no way
+            // it could have changed. It's disabled when ttl == 'first'.
+            unset($values['no_download']);
+        }
+
+        $expireAt = false;
+
+        // Apply values from form to hash in Redis
+        foreach ($values as $field => $value) {
+            if ($field == 'strip_exif') {
+                // But skip strip_exif, since it's always on
+                continue;
             }
 
-            $expireAt = false;
-
-            // Apply values from form to hash in Redis
-            foreach ($values as $field => $value) {
-                if ($field == 'strip_exif') {
-                    // But skip strip_exif, since it's always on
-                    continue;
+            if ($field === 'ttl') {
+                // Delete after view?
+                if ($value == Unsee_Hash::$ttlTypes[0]) {
+                    $hashDoc->max_views = 1;
+                    $expireAt           = $hashDoc->timestamp + Unsee_Redis::EXP_DAY;
+                    // Set to expire within a day after upload
+                } else {
+                    $amount             = array_search($value, Unsee_Hash::$ttlTypes);
+                    $hashDoc->max_views = 0;
+                    $expireAt           = $hashDoc->timestamp + $amount;
                 }
-
-                if ($field === 'ttl') {
-                    // Delete after view?
-                    if ($value == Unsee_Hash::$ttlTypes[0]) {
-                        $hashDoc->max_views = 1;
-                        $expireAt = $hashDoc->timestamp + Unsee_Redis::EXP_DAY;
-                        // Set to expire within a day after upload
-                    } else {
-                        $amount = array_search($value, Unsee_Hash::$ttlTypes);
-                        $hashDoc->max_views = 0;
-                        $expireAt = $hashDoc->timestamp + $amount;
-                    }
-                }
-
-                $hashDoc->$field = $value;
             }
 
-            if ($expireAt) {
-                $hashDoc->expireAt($expireAt);
-            }
+            $hashDoc->$field = $value;
+        }
+
+        if ($expireAt) {
+            $hashDoc->expireAt($expireAt);
         }
     }
 
     /**
      * Default controller for image view page
+     *
      * @return boolean
      */
     public function indexAction()
@@ -107,14 +115,13 @@ class ViewController extends Zend_Controller_Action
         }
 
         // Get hash document
-        $hashDoc = $this->hashDoc = new Unsee_Hash($hashString);
-        $form = $this->form;
-
-        $block = new Unsee_Block($hashDoc->key);
+        $hashDoc   = $this->hashDoc = new Unsee_Hash($hashString);
+        $form      = $this->form;
+        $block     = new Unsee_Block($hashDoc->key);
         $sessionId = Unsee_Session::getCurrent();
 
         /**
-         * "Block" cookie detected. This means that viewer performed one of the restricred actions, like
+         * "Block" cookie detected. This means that viewer performed one of the restricted actions, like
          * opening a web developer tools (Firebug), pressed the print screen button, etc.
          */
         if (isset($_COOKIE['block'])) {
@@ -122,6 +129,7 @@ class ViewController extends Zend_Controller_Action
             setcookie('block', null, 1, '/' . $hashDoc->key . '/');
             // Register a block flag for current session
             $block->$sessionId = time();
+
             // Act as if the image was deleted
             return $this->deletedAction();
         }
@@ -150,6 +158,7 @@ class ViewController extends Zend_Controller_Action
         // No use to do anything, page is not viewable for one of the reasons
         if (!$hashDoc->isViewable($hashDoc)) {
             $hashDoc->delete();
+
             return $this->deletedAction();
         }
 
@@ -169,7 +178,7 @@ class ViewController extends Zend_Controller_Action
             $ticket->issue($image);
         }
 
-        // Handle current request based on what settins are set
+        // Handle current request based on what settings are set
         foreach ($values as $key => $value) {
             $key = explode('_', $key);
 
@@ -204,10 +213,10 @@ class ViewController extends Zend_Controller_Action
         // Don't show the 'other party' text for the 'other party'
         if (Unsee_Session::isOwner($hashDoc) || $hashDoc->ttl !== Unsee_Hash::$ttlTypes[0]) {
             if ($hashDoc->ttl === Unsee_Hash::$ttlTypes[0]) {
-                $deleteTimeStr = '';
+                $deleteTimeStr         = '';
                 $deleteMessageTemplate = 'delete_first';
             } else {
-                $deleteTimeStr = $hashDoc->getTtlWords();
+                $deleteTimeStr         = $hashDoc->getTtlWords();
                 $deleteMessageTemplate = 'delete_time';
             }
 
@@ -217,8 +226,8 @@ class ViewController extends Zend_Controller_Action
         // Cookie check vould be passed to the image view controller below to 
         // make sure the page was opened in a browser
         $this->view->cookieCheck = md5(Unsee_Session::getCurrent() . $hashDoc->key);
-        $this->view->images = $images;
-        $this->view->groups = $form->getDisplayGroups();
+        $this->view->images      = $images;
+        $this->view->groups      = $form->getDisplayGroups();
 
         $message = '';
         if (Unsee_Session::isOwner($this->hashDoc)) {
@@ -239,6 +248,7 @@ class ViewController extends Zend_Controller_Action
 
     /**
      * Sets the hash title if available
+     *
      * @return boolean
      */
     private function processTitle()
@@ -252,6 +262,7 @@ class ViewController extends Zend_Controller_Action
 
     /**
      * Sets the hash description if available
+     *
      * @return boolean
      */
     private function processDescription()
@@ -265,6 +276,7 @@ class ViewController extends Zend_Controller_Action
 
     /**
      * Sets up things affected by the no_download setting
+     *
      * @return boolean
      */
     private function processNoDownload()
@@ -278,17 +290,20 @@ class ViewController extends Zend_Controller_Action
 
         // Don't allow download if the setting is set accordingly or the image is a one-timer
         $this->view->no_download = $this->hashDoc->no_download || $this->hashDoc->ttl === Unsee_Hash::$ttlTypes[0];
+
         return true;
     }
 
     /**
      * Returns true if IP is allowed or the allow_ip setting is not set
+     *
      * @return boolean
      */
     private function processAllowIp()
     {
         if (!empty($this->hashDoc->allow_ip) && !Unsee_Session::isOwner($this->hashDoc)) {
             $ip = $this->getRequest()->getServer('REMOTE_ADDR');
+
             return fnmatch($this->hashDoc->allow_ip, $ip);
         }
 
@@ -297,6 +312,7 @@ class ViewController extends Zend_Controller_Action
 
     /**
      * Returns true if the referring domain is not set or equals the one from the allow_domain setting
+     *
      * @return boolean
      */
     private function processAllowDomain()
@@ -326,11 +342,13 @@ class ViewController extends Zend_Controller_Action
 
     /**
      * Action for deleted hashes, displays a "Deleted" message
+     *
      * @return bool
      */
     public function deletedAction()
     {
         $this->render('deleted');
+
         return $this->getResponse()->setHttpResponseCode(410);
     }
 
@@ -345,8 +363,8 @@ class ViewController extends Zend_Controller_Action
 
         // Getting request params
         $imageId = $this->getParam('id');
-        $ticket = $this->getParam('ticket');
-        $time = $this->getParam('time');
+        $ticket  = $this->getParam('ticket');
+        $time    = $this->getParam('time');
 
         // Dropping request if params are not right or the image is too old
         if (!$imageId || !$ticket || !$time || $time < time()) {
@@ -374,8 +392,8 @@ class ViewController extends Zend_Controller_Action
         }
 
         /**
-         * Restricting image download also means that it has to requested by the page, e.g. no
-         * direct access. Direct access means no referrer.
+         * Restricting image download also means that it has to be requested by the page, e.g. no
+         * direct access. No referrer means direct access.
          */
         if ($hashDoc->no_download && empty($_SERVER['HTTP_REFERER'])) {
             return $this->noContentAction();
@@ -388,19 +406,22 @@ class ViewController extends Zend_Controller_Action
         if (!$ticketDoc->isAllowed($imgDoc) && $hashDoc->no_download) {
             // Delete the ticket
             $ticketDoc->invalidate($imgDoc);
+
             return $this->noContentAction();
         } else {
             // Delete the ticket
             $ticketDoc->invalidate($imgDoc);
         }
 
-        // Watermark viewer's IP if required
+        // Watermark viewer's IP if required and if the viewer is not the owner
         if ($hashDoc->watermark_ip && !Unsee_Session::isOwner($hashDoc)) {
             $imgDoc->watermark();
         }
 
         // Embed comment if required
-        $hashDoc->comment && $imgDoc->comment($hashDoc->comment);
+        if ($hashDoc->comment) {
+            $imgDoc->comment($hashDoc->comment);
+        }
 
         $this->getResponse()->setHeader('Content-type', $imgDoc->type);
 
@@ -408,7 +429,7 @@ class ViewController extends Zend_Controller_Action
 
         // The hash itself was already outdated for one of the reasons.
         if (!$hashDoc->isViewable()) {
-            // This means the image should not be avaiable, so delete it
+            // This means the image should not be available, so delete it
             $imgDoc->delete();
         }
     }

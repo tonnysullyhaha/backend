@@ -5,12 +5,11 @@
  */
 class Zend_View_Helper_JavascriptHelper extends Zend_View_Helper_Abstract
 {
-
     function javascriptHelper()
     {
-        $links = $this->view->headScript();
+        $links     = $this->view->headScript();
         $combining = Zend_Registry::get('config')->combineAssets;
-        $urls = array();
+        $urls      = array();
 
         foreach ($links as $item) {
             if ($combining) {
@@ -22,6 +21,7 @@ class Zend_View_Helper_JavascriptHelper extends Zend_View_Helper_Abstract
 
         if ($combining) {
             $item->attributes['src'] = '/js/??' . implode(',', $urls);
+
             return $this->view->headScript()->itemToString($item, str_repeat(' ', 0), '', '');
         } else {
             return $this->view->headScript();

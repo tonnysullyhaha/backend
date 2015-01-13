@@ -5,7 +5,6 @@
  */
 class IndexController extends Zend_Controller_Action
 {
-
     public function init()
     {
 
@@ -25,6 +24,5 @@ class IndexController extends Zend_Controller_Action
 
     public function indexAction()
     {
-        
     }
 }

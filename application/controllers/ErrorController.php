@@ -2,7 +2,6 @@
 
 class ErrorController extends Zend_Controller_Action
 {
-
     public function init()
     {
         $this->view->headScript()->appendFile('js/vendor/modernizr-2.6.2.min.js');
@@ -19,6 +18,7 @@ class ErrorController extends Zend_Controller_Action
 
         if (!$errors || !$errors instanceof ArrayObject) {
             $this->view->message = 'You have reached the error page';
+
             return;
         }
 
@@ -33,7 +33,7 @@ class ErrorController extends Zend_Controller_Action
             default:
                 // application error
                 $this->getResponse()->setHttpResponseCode(500);
-                $priority = Zend_Log::CRIT;
+                $priority            = Zend_Log::CRIT;
                 $this->view->message = 'Application error';
                 break;
         }
@@ -59,6 +59,7 @@ class ErrorController extends Zend_Controller_Action
             return false;
         }
         $log = $bootstrap->getResource('Log');
+
         return $log;
     }
 }

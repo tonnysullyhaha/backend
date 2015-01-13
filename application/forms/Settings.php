@@ -5,39 +5,47 @@
  */
 class Application_Form_Settings extends Zend_Form
 {
-
+    /**
+     *
+     *
+     * @author Michael Gorianskyi <michael.gorianskyi@westwing.de>
+     *
+     * @throws Exception
+     * @throws Zend_Exception
+     * @throws Zend_Form_Exception
+     * @todo   Refactor
+     *
+     * @return void
+     */
     public function init()
     {
         $this->setMethod('post');
         $this->setAction('/settings/');
 
         $settings = Zend_Registry::get('config')->settings;
-        $lang = Zend_Registry::get('Zend_Translate');
+        $lang     = Zend_Registry::get('Zend_Translate');
 
-        // TODO: This requires implementation
+        // @todo: This requires implementation
         $continents = Zend_Locale::getTranslationList('Territory', $lang->getLocale(), 1);
-        $countries = Zend_Locale::getTranslationList('Territory', $lang->getLocale(), 2);
+        $countries  = Zend_Locale::getTranslationList('Territory', $lang->getLocale(), 2);
         array_unshift($countries, current($continents));
 
         foreach ($settings as $section => $fields) {
             $groupFieldNames = array();
-            $groupName = 'settings_' . $section;
-            $groupTitle = $lang->translate($groupName);
+            $groupName       = 'settings_' . $section;
+            $groupTitle      = $lang->translate($groupName);
 
             foreach ($fields as $name => $params) {
-
                 $params = $params->toArray();
 
                 if (empty($params['type'])) {
                     throw new Exception('Type parameter is required for field "' . $name . '"');
                 }
 
-                $type = $params['type'];
-
-                $langStr = 'settings_' . $section . '_' . $name;
+                $type              = $params['type'];
+                $langStr           = 'settings_' . $section . '_' . $name;
                 $groupFieldNames[] = $elName = $name;
-
-                $element = $this->createElement($type, $elName, array('disableHidden' => true));
+                $element           = $this->createElement($type, $elName, array('disableHidden' => true));
                 $element->setLabel($lang->translate($langStr));
 
                 if ($type === 'checkbox' && !empty($params['checked']) && $params['checked'] === 'true') {
@@ -85,7 +93,7 @@ class Application_Form_Settings extends Zend_Form
                 $this->addElement($element);
             }
 
-            $group = $this->addDisplayGroup($groupFieldNames, $groupName, array('legend' => $groupTitle));
+            $this->addDisplayGroup($groupFieldNames, $groupName, array('legend' => $groupTitle));
 
             foreach ($this->getDisplayGroups() as $group) {
                 $group->clearDecorators();

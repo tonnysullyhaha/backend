@@ -5,9 +5,9 @@
  */
 class Unsee_Session
 {
-
     /**
      * Returns current session hash
+     *
      * @return string
      */
     static public function getCurrent()
@@ -17,7 +17,9 @@ class Unsee_Session
 
     /**
      * Returns true if the provided image model belongs to current viewer
+     *
      * @param Unsee_Hash $hashDoc
+     *
      * @return true
      */
     static public function isOwner($hashDoc)
