@@ -223,7 +223,7 @@ class ViewController extends Zend_Controller_Action
             $this->view->deleteTime = $this->view->translate($deleteMessageTemplate, array($deleteTimeStr));
         }
 
-        // Cookie check vould be passed to the image view controller below to 
+        // Cookie check would be passed to the image view controller below to
         // make sure the page was opened in a browser
         $this->view->cookieCheck = md5(Unsee_Session::getCurrent() . $hashDoc->key);
         $this->view->images      = $images;

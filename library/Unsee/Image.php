@@ -157,7 +157,7 @@ class Unsee_Image extends Unsee_Redis
         $font  = $_SERVER['DOCUMENT_ROOT'] . '/pixel.ttf';
         $image = $this->getImagick();
 
-        $watermark = $this->getImagick();
+        $watermark = new Imagick();
         $watermark->newImage(1000, 1000, new ImagickPixel('none'));
 
         $draw = new ImagickDraw();
