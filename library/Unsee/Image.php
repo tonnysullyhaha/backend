@@ -40,7 +40,7 @@ class Unsee_Image extends Unsee_Redis
         if ($newImage) {
             $keys      = Unsee_Image::keys($hash->key . '*');
             $this->num = count($keys);
-            $this->expireAt(time() + $hash->ttl());
+            $this->expireAt($hash->timestamp + $hash->getTtl());
         }
 
         $this->setSecureParams();

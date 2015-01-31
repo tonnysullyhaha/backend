@@ -14,8 +14,6 @@ class Unsee_Hash extends Unsee_Redis
      * @todo Should go to config
      * @var array
      */
-    public static $ttlTypes = array(-1 => 'now', 0 => 'first', 3600 => 'hour', 86400 => 'day', 604800 => 'week');
-
     public function __construct($key = null)
     {
         parent::__construct($key);
@@ -24,9 +22,8 @@ class Unsee_Hash extends Unsee_Redis
         // Creating a new share
         if (empty($key)) {
             $this->setNewHash();
-            $this->expireAt(time() + static::EXP_DAY);
             $this->timestamp              = time();
-            $this->ttl                    = self::$ttlTypes[0];
+            $this->ttl                    = -1;
             $this->max_views              = 1;
             $this->views                  = 0;
             $this->no_download            = true;
@@ -39,21 +36,13 @@ class Unsee_Hash extends Unsee_Redis
     }
 
     /**
-     * Set expiration time for the hash and also for the related images
+     * Returns the number of seconds the hash has to exist
      *
-     * @param int $time
-     *
-     * @return bool
+     * @return mixed
      */
-    public function expireAt($time)
+    public function getTtl()
     {
-        $images = $this->getImages();
-
-        foreach ($images as $imgDoc) {
-            $imgDoc->expireAt($time);
-        }
-
-        return parent::expireAt($time);
+        return $this->ttl - (time() - $this->timestamp);
     }
 
     /**
@@ -157,7 +146,7 @@ class Unsee_Hash extends Unsee_Redis
      */
     public function getTtlWords()
     {
-        $secondsLeft = $this->ttl();
+        $secondsLeft = $this->getTtl();
         $lang        = Zend_Registry::get('Zend_Translate');
 
         if ($secondsLeft < 60) {
@@ -212,5 +201,10 @@ class Unsee_Hash extends Unsee_Redis
         $syllableNum = (int) $hashConf['syllables'];
 
         return preg_match('~([' . $consonants . '][' . $vowels . ']){' . $syllableNum . '}~', $hash);
+    }
+
+    public function isValidTtl($value)
+    {
+        return is_numeric($value) && in_array($value, Zend_Registry::get('ttls'));
     }
 }

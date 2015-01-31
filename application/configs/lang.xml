@@ -40,6 +40,14 @@
             <tuv xml:lang="ru"><seg>после просмотра</seg></tuv>
             <tuv xml:lang="en"><seg>after first view</seg></tuv>
         </tu>
+        <tu tuid="after_ten">
+            <tuv xml:lang="ru"><seg>через 10 минут</seg></tuv>
+            <tuv xml:lang="en"><seg>In 10 minutes</seg></tuv>
+        </tu>
+        <tu tuid="after_thirty">
+            <tuv xml:lang="ru"><seg>через 30 минут</seg></tuv>
+            <tuv xml:lang="en"><seg>In 30 minutes</seg></tuv>
+        </tu>
         <tu tuid="after_hour">
             <tuv xml:lang="ru"><seg>через час</seg></tuv>
             <tuv xml:lang="en"><seg>in one hour</seg></tuv>
@@ -463,47 +471,62 @@
             <tuv xml:lang="en"><seg>Sets the time when to delete the images</seg></tuv>
         </tu>
 
-        <tu tuid="settings_delete_ttl_now">
+        <tu tuid="settings_delete_ttl_-1">
             <tuv xml:lang="ru"><seg>Немедленно</seg></tuv>
             <tuv xml:lang="en"><seg>Right now</seg></tuv>
         </tu>
-        <tu tuid="settings_delete_ttl_now_caption">
+        <tu tuid="settings_delete_ttl_-1_caption">
             <tuv xml:lang="ru"><seg>Изображения будут удалены прямо сейчас</seg></tuv>
             <tuv xml:lang="en"><seg>Deletes images immediately</seg></tuv>
         </tu>
         
-        <tu tuid="settings_delete_ttl_first">
+        <tu tuid="settings_delete_ttl_0">
             <tuv xml:lang="ru"><seg>После первого просмотра</seg></tuv>
             <tuv xml:lang="en"><seg>After first view</seg></tuv>
         </tu>
-        <tu tuid="settings_delete_ttl_first_caption">
+        <tu tuid="settings_delete_ttl_0_caption">
             <tuv xml:lang="ru"><seg>Изображения будут удалены после первого просмотра другим человеком</seg></tuv>
             <tuv xml:lang="en"><seg>Deletes images after the other party views it</seg></tuv>
         </tu>
-        
-        <tu tuid="settings_delete_ttl_hour">
+        <tu tuid="settings_delete_ttl_600">
+            <tuv xml:lang="ru"><seg>Через 10 минут</seg></tuv>
+            <tuv xml:lang="en"><seg>In 10 minutes</seg></tuv>
+        </tu>
+        <tu tuid="settings_delete_ttl_600_caption">
+            <tuv xml:lang="ru"><seg>Изображения удалятся через 10 минут после загрузки</seg></tuv>
+            <tuv xml:lang="en"><seg>Deletes images in 10 minutes after upload</seg></tuv>
+        </tu>
+        <tu tuid="settings_delete_ttl_1800">
+            <tuv xml:lang="ru"><seg>Через 30 минут</seg></tuv>
+            <tuv xml:lang="en"><seg>In 30 minutes</seg></tuv>
+        </tu>
+        <tu tuid="settings_delete_ttl_1800_caption">
+            <tuv xml:lang="ru"><seg>Изображения удалятся через полчаса после загрузки</seg></tuv>
+            <tuv xml:lang="en"><seg>Deletes images in half an hour after upload</seg></tuv>
+        </tu>
+        <tu tuid="settings_delete_ttl_3600">
             <tuv xml:lang="ru"><seg>Через час</seg></tuv>
             <tuv xml:lang="en"><seg>In one hour</seg></tuv>
         </tu>
-        <tu tuid="settings_delete_ttl_hour_caption">
+        <tu tuid="settings_delete_ttl_3600_caption">
             <tuv xml:lang="ru"><seg>Изображения удалятся через час после загрузки</seg></tuv>
             <tuv xml:lang="en"><seg>Deletes images in one hour after upload</seg></tuv>
         </tu>
 
-        <tu tuid="settings_delete_ttl_day">
+        <tu tuid="settings_delete_ttl_84600">
             <tuv xml:lang="ru"><seg>Через сутки</seg></tuv>
             <tuv xml:lang="en"><seg>In one day</seg></tuv>
         </tu>
-        <tu tuid="settings_delete_ttl_day_caption">
+        <tu tuid="settings_delete_ttl_84600_caption">
             <tuv xml:lang="ru"><seg>Изображения удалятся через 24 часа после загрузки</seg></tuv>
             <tuv xml:lang="en"><seg>Deletes images in 24 hours after the upload</seg></tuv>
         </tu>
         
-        <tu tuid="settings_delete_ttl_week">
+        <tu tuid="settings_delete_ttl_604800">
             <tuv xml:lang="ru"><seg>Через неделю</seg></tuv>
             <tuv xml:lang="en"><seg>In a week</seg></tuv>
         </tu>
-        <tu tuid="settings_delete_ttl_week_caption">
+        <tu tuid="settings_delete_ttl_604800_caption">
             <tuv xml:lang="ru"><seg>Страница будет доступна в течении 7 дней</seg></tuv>
             <tuv xml:lang="en"><seg>This page will live for 7 days total</seg></tuv>
         </tu>

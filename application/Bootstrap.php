@@ -103,4 +103,15 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
             Zend_Registry::set('RedisSlave', $redis);
         }
     }
+
+    /**
+     * Defines the image's time to live
+     *
+     * @throws Zend_Exception
+     */
+    protected function _initTtl()
+    {
+        $ttls = Zend_Registry::get('config')->ttl->toArray();
+        Zend_Registry::set('ttls', $ttls);
+    }
 }

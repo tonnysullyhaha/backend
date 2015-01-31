@@ -22,7 +22,7 @@ class Unsee_Form_Decorator_Radio extends Zend_Form_Decorator_Abstract
                 $captionProp = " title='" . $lang->translate($captionStr) . "' ";
             }
 
-            if ($name === $el->getValue()) {
+            if ($name == $el->getValue()) {
                 $selectedProp = "checked='checked'";
             }
 
