@@ -140,26 +140,21 @@ class ViewController extends Zend_Controller_Action
         }
 
         // It was already deleted/did not exist/expired
-        if (!$hashDoc->exists() || !$hashDoc->isViewable($hashDoc)) {
+        if (!$hashDoc->isViewable($hashDoc)) {
+            $hashDoc->delete();
+
             return $this->deletedAction();
         }
 
         // Handle image settings form submission
         if ($this->getRequest()->isPost()) {
             $this->handleSettingsFormSubmit($form, $hashDoc);
-        }
 
-        // Check again
-        // It was already deleted/did not exist/expired
-        if (!$hashDoc->exists() || !$hashDoc->isViewable($hashDoc)) {
-            return $this->deletedAction();
-        }
-
-        // No use to do anything, page is not viewable for one of the reasons
-        if (!$hashDoc->isViewable($hashDoc)) {
-            $hashDoc->delete();
-
-            return $this->deletedAction();
+            // Check again after settings change
+            // It was already deleted/did not exist/expired
+            if (!$hashDoc->isViewable($hashDoc)) {
+                return $this->deletedAction();
+            }
         }
 
         // Getting an array of hash settings

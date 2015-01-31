@@ -42,7 +42,9 @@ class Unsee_Hash extends Unsee_Redis
      */
     public function getTtl()
     {
-        return $this->ttl - (time() - $this->timestamp);
+        $ttl = $this->ttl ?: 84600;
+
+        return $ttl - (time() - $this->timestamp);
     }
 
     /**
@@ -134,7 +136,11 @@ class Unsee_Hash extends Unsee_Redis
      */
     public function isViewable()
     {
-        return !$this->max_views || $this->max_views > $this->views;
+        $exists  = $this->exists();
+        $viewsOk = !$this->max_views || $this->max_views > $this->views;
+        $ttlOk   = $this->getTtl() > 0;
+
+        return $exists && $viewsOk && $ttlOk;
     }
 
     /**
