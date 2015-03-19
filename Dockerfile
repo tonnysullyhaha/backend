@@ -18,4 +18,7 @@ ADD         scripts/php-fpm-pool.conf /etc/php5/fpm/pool.d/unsee.conf
 ADD         scripts/unsee.ini /etc/php5/fpm/conf.d/unsee.ini
 
 RUN         mkdir -p /var/www/unsee/
-ADD         * /var/www/unsee/
+
+ADD         application/ /var/www/unsee/application
+ADD         library/ /var/www/unsee/library
+ADD         public/ /var/www/unsee/public
