@@ -22,3 +22,6 @@ RUN         mkdir -p /var/www/unsee/
 ADD         application/ /var/www/unsee/application
 ADD         library/ /var/www/unsee/library
 ADD         public/ /var/www/unsee/public
+
+RUN         cd /var/www/unsee/ && curl -sS https://getcomposer.org/installer | php
+RUN         cd /var/www/unsee/ && php composer.phar require zendframework/zendframework1

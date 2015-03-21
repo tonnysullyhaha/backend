@@ -22,10 +22,8 @@ set_include_path(
     )
 );
 
-/** Zend_Application */
-require_once 'Zend/Application.php';
+require '../vendor/autoload.php';
 
-require_once 'Zend/Loader/Autoloader/Resource.php';
 $resourceLoader = new Zend_Loader_Autoloader_Resource(array('basePath' => APPLICATION_PATH, 'namespace' => ''));
 // Create application, bootstrap, and run
 $application = new Zend_Application(APPLICATION_ENV, APPLICATION_PATH . '/configs/application.ini');
