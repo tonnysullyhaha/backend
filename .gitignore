@@ -1,2 +1,3 @@
-library/Zend
+vendor
+composer*
 .DS_Store
