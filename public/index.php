@@ -22,7 +22,7 @@ set_include_path(
     )
 );
 
-require '../vendor/autoload.php';
+require __DIR__ . '/../vendor/autoload.php';
 
 $resourceLoader = new Zend_Loader_Autoloader_Resource(array('basePath' => APPLICATION_PATH, 'namespace' => ''));
 // Create application, bootstrap, and run

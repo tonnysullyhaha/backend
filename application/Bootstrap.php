@@ -91,7 +91,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         }
 
         $redis = new Redis();
-        $redis->connect($redisMasterConfig->host, $redisMasterConfig->port);
+        $redis->connect($redisMasterConfig->host, $redisMasterConfig->port, 2);
 
         Zend_Registry::set('RedisMaster', $redis);
 
