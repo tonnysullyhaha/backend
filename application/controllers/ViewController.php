@@ -27,8 +27,13 @@ class ViewController extends Zend_Controller_Action
         $this->view->headScript()->appendFile('js/vendor/jquery.ui.widget.js');
         $this->view->headScript()->appendFile('js/vendor/jquery.fileupload.js');
         $this->view->headScript()->appendFile('js/vendor/jquery.lazyload.min.js');
-        $this->view->headScript()->appendFile('js/view.js');
+        $this->view->headScript()->appendFile('js/vendor/jpg.js');
+        $this->view->headScript()->appendFile('js/vendor/aes.js');
+        $this->view->headScript()->appendFile('js/vendor/enc-base64-min.js');
+
+        $this->view->headScript()->appendFile('js/crypt.js');
         $this->view->headScript()->appendFile('js/chat.js');
+        $this->view->headScript()->appendFile('js/view.js');
 
         $this->view->headLink()->appendStylesheet('css/normalize.css');
         $this->view->headLink()->appendStylesheet('css/h5bp.css');
@@ -161,8 +166,7 @@ class ViewController extends Zend_Controller_Action
         $values = $hashDoc->export();
         // Populate form values
         $form->populate($values);
-        // Disable image download by default
-        $this->view->no_download = true;
+        $this->view->no_download = (int) ($hashDoc->no_download || !$this->hashDoc->ttl);
 
         $images = $hashDoc->getImages();
         // Creating a set of "tickets" to view images related to current hash
@@ -219,11 +223,7 @@ class ViewController extends Zend_Controller_Action
             $this->view->deleteTime = $this->view->translate($deleteMessageTemplate, array($deleteTimeStr));
         }
 
-        // Cookie check would be passed to the image view controller below to
-        // make sure the page was opened in a browser
-        $this->view->cookieCheck = md5(Unsee_Session::getCurrent() . $hashDoc->key);
-        $this->view->images      = $images;
-        $this->view->groups      = $form->getDisplayGroups();
+        $this->view->groups = $form->getDisplayGroups();
 
         $message = '';
         if (Unsee_Session::isOwner($this->hashDoc)) {
@@ -233,6 +233,7 @@ class ViewController extends Zend_Controller_Action
         }
 
         $this->view->welcomeMessage = $message;
+        $this->view->hash           = $hashDoc->key;
 
         return true;
     }
@@ -328,7 +329,7 @@ class ViewController extends Zend_Controller_Action
 
             $actualDomain = $ref['host'];
 
-            if (!preg_match("~^([\w]+.)?$expectedDomain$~", $actualDomain)) {
+            if (!preg_match("~^([\\w]+.)?$expectedDomain$~", $actualDomain)) {
                 return false;
             }
         }
@@ -346,6 +347,53 @@ class ViewController extends Zend_Controller_Action
         $this->render('deleted');
 
         return $this->getResponse()->setHttpResponseCode(410);
+    }
+
+    /**
+     * Returns information about the next image to load
+     *
+     * @return void
+     */
+    public function nextImageAction()
+    {
+        $prevImage = $this->getRequest()->getParam('prev', false);
+        $hash      = $this->getRequest()->getParam('hash');
+
+        if (!$hash) {
+            die('No hash provided');
+        }
+
+        $hashDoc     = new Unsee_Hash($hash);
+        $images      = $hashDoc->getImages();
+        $return      = null;
+        $targetImage = null;
+
+        // No images in the hash, empty return
+        if (!$images) {
+            $this->_helper->json($return);
+        }
+
+        if (!$prevImage) {
+            $targetImage = current($images);
+        } elseif (!empty($images[$prevImage])) {
+            $keys      = array_keys($images);
+            $prevIndex = array_search($prevImage, $keys);
+            $notLast   = $prevIndex < count($images) - 1;
+
+            if ($notLast) {
+                $nextKey     = $keys[$prevIndex + 1];
+                $targetImage = $images[$nextKey];
+            }
+        }
+
+        if ($targetImage) {
+            $return['ttd']   = $targetImage->secureTtd;
+            $return['md5']   = $targetImage->secureMd5;
+            $return['key']   = $targetImage->key;
+            $return['width'] = $targetImage->width;
+        }
+
+        $this->_helper->json($return);
     }
 
     /**
@@ -419,9 +467,26 @@ class ViewController extends Zend_Controller_Action
             $imgDoc->comment($hashDoc->comment);
         }
 
-        $this->getResponse()->setHeader('Content-type', $imgDoc->type);
+        // Download restricted
+        if ($hashDoc->no_download) {
+            $this->getResponse()->setHeader('Content-type', 'text/json');
+            $imgDoc = new Unsee_Image_Encrypted($imgDoc);
+            $imgDoc->setPassphrase('test');
 
-        print $imgDoc->getImageContent();
+            $salt = bin2hex($imgDoc->salt);
+            $iv   = bin2hex($imgDoc->iv);
+
+            $data = array(
+                "ct" => $imgDoc->getImageContent(),
+                "iv" => $iv,
+                "s"  => $salt
+            );
+
+            print json_encode($data);
+        } else {
+            $this->getResponse()->setHeader('Content-type', 'image/jpeg');
+            print $imgDoc->getImageContent();
+        }
 
         // The hash itself was already outdated for one of the reasons.
         if (!$hashDoc->isViewable()) {

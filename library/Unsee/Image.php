@@ -60,7 +60,7 @@ class Unsee_Image extends Unsee_Redis
             $linkTtl = $this->ttl();
         }
 
-        $this->secureTtd = round(microtime(true)) + $linkTtl;
+        $this->secureTtd = ceil(microtime(true)) + $linkTtl;
 
         // Preparing a hash for nginx's secure link
         $md5 = base64_encode(md5($this->key . $this->secureTtd, true));
@@ -108,8 +108,8 @@ class Unsee_Image extends Unsee_Redis
 
         $this->size    = filesize($filePath);
         $this->type    = $info['mime'];
-        $this->width   = $info[0];
-        $this->height  = $info[1];
+        $this->width   = $imageWidth;
+        $this->height  = $imageHeight;
         $this->content = $image->getImageBlob();
         $this->expireAt(time() + static::EXP_DAY);
 

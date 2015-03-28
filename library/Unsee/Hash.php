@@ -100,10 +100,10 @@ class Unsee_Hash extends Unsee_Redis
 
         foreach ($imagesKeys as $key) {
             list(, $imgKey) = explode('_', $key);
-            $imageDocs[] = new Unsee_Image($this, $imgKey);
+            $imageDocs[$key] = new Unsee_Image($this, $imgKey);
         }
 
-        usort($imageDocs, function ($a, $b) {
+        uasort($imageDocs, function ($a, $b) {
             if ($a->num === $b->num) {
                 return 0;
             }

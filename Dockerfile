@@ -6,7 +6,8 @@ RUN         apt-get update && apt-get install -y \
                 php-pear \
                 php5-dev \
                 php5-imagick \
-                imagemagick
+                imagemagick \
+                php5-mcrypt
 
 RUN         pecl install redis
 

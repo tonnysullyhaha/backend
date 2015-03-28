@@ -1,6 +1,8 @@
 <script type="text/javascript">
 var domain = '<?=$_SERVER['SERVER_NAME'];?>';
 var welcome_message = '<?=$this->welcomeMessage;?>';
+var hash_string = '<?=$this->hash;?>';
+var no_download = '<?=$this->no_download;?>';
 </script>
 
 <?php
@@ -116,14 +118,4 @@ if ($this->no_download) {
 }
 
 ?>
-<script>
-    var a = [<?php
-$key = 0;
-foreach ($this->images as $imgDoc) {
-
-    ?>['<?= $imgDoc->key ?>', '<?= $imgDoc->secureMd5 ?>', <?= $imgDoc->secureTtd ?>, <?= $imgDoc->width; ?>],<?php
-}
-
-?>], b = '<?= $this->cookieCheck; ?>';
-</script>
 <div id="images"></div>
