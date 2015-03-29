@@ -30,6 +30,7 @@ class ViewController extends Zend_Controller_Action
         $this->view->headScript()->appendFile('js/vendor/jpg.js');
         $this->view->headScript()->appendFile('js/vendor/aes.js');
         $this->view->headScript()->appendFile('js/vendor/enc-base64-min.js');
+        $this->view->headScript()->appendFile('js/vendor/keypress.js');
 
         $this->view->headScript()->appendFile('js/crypt.js');
         $this->view->headScript()->appendFile('js/chat.js');
@@ -79,8 +80,13 @@ class ViewController extends Zend_Controller_Action
 
         // Apply values from form to hash in Redis
         foreach ($values as $field => $value) {
-            if ($field == 'strip_exif') {
+            if ($field === 'strip_exif') {
                 // But skip strip_exif, since it's always on
+                continue;
+            }
+
+            // Don't change no_download if current ttl is till "first view"
+            if ($field === 'no_download' && (int) $hashDoc->ttl === 0) {
                 continue;
             }
 
@@ -166,8 +172,8 @@ class ViewController extends Zend_Controller_Action
         $values = $hashDoc->export();
         // Populate form values
         $form->populate($values);
-        $this->view->no_download = (int) ($hashDoc->no_download || !$this->hashDoc->ttl);
 
+        $this->view->no_download = (int) $hashDoc->no_download;
         $images = $hashDoc->getImages();
         // Creating a set of "tickets" to view images related to current hash
         $ticket = new Unsee_Ticket();
@@ -286,7 +292,7 @@ class ViewController extends Zend_Controller_Action
         }
 
         // Don't allow download if the setting is set accordingly or the image is a one-timer
-        $this->view->no_download = $this->hashDoc->no_download || !$this->hashDoc->ttl;
+        $this->view->no_download = $this->hashDoc->no_download;
 
         return true;
     }
