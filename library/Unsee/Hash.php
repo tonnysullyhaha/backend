@@ -36,6 +36,24 @@ class Unsee_Hash extends Unsee_Redis
     }
 
     /**
+     * Overrides the the default method to also expire images
+     *
+     * @param int $time
+     *
+     * @return void
+     */
+    public function expireAt($time)
+    {
+        $images = $this->getImages();
+
+        foreach ($images as $imageDoc) {
+            $imageDoc->expireAt($time);
+        }
+
+        parent::expireAt($time);
+    }
+
+    /**
      * Returns the number of seconds the hash has to exist
      *
      * @return mixed
