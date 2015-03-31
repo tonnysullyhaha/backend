@@ -99,12 +99,12 @@ class Unsee_Image extends Unsee_Redis
             $image->thumbnailimage(null, $maxSize);
         }
 
-        $image->setCompression(Imagick::COMPRESSION_JPEG);
-
         // @todo Should be in config
-        $image->setCompressionQuality(80);
+        $image->setCompression(Imagick::COMPRESSION_JPEG2000);
+        $image->setCompressionQuality(85);
 
         $image->stripimage();
+        $image->setImageFormat('jpeg');
 
         $this->size    = filesize($filePath);
         $this->type    = $info['mime'];
