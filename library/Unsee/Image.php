@@ -157,16 +157,26 @@ class Unsee_Image extends Unsee_Redis
         $font  = $_SERVER['DOCUMENT_ROOT'] . '/pixel.ttf';
         $image = $this->getImagick();
 
+        $width    = $image->getImageWidth();
+        $fontSize = round($width / 30);
+
+        if ($fontSize < 30) {
+            $fontSize = 30;
+        }
+
+        $watermarkSize = $fontSize * 16;
+
         $watermark = new Imagick();
-        $watermark->newImage(1000, 1000, new ImagickPixel('none'));
+        $watermark->newImage($watermarkSize, $watermarkSize, new ImagickPixel('none'));
 
         $draw = new ImagickDraw();
         $draw->setFont($font);
-        $draw->setfontsize(30);
+        $draw->setfontsize($fontSize);
         $draw->setFillColor('gray');
-        $draw->setFillOpacity(.3);
-        $watermark->annotateimage($draw, 100, 200, -45, $text);
-        $watermark->annotateimage($draw, 550, 550, 45, $text);
+        $draw->setFillOpacity(.2);
+
+        $watermark->annotateimage($draw, round($fontSize / 2), $fontSize, 45, $text);
+        $watermark->annotateimage($draw, round($watermarkSize / 1.9), round($watermarkSize / 1.2), -45, $text);
 
         $this->iMagick = $image->textureimage($watermark);
 
