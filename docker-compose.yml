@@ -1,0 +1,7 @@
+backend:
+  build: .
+  volumes:
+    - .:/var/www/unsee/
+  ports:
+    - 9000:9000
+  net: host
