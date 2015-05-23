@@ -174,7 +174,7 @@ class ViewController extends Zend_Controller_Action
         $form->populate($values);
 
         $this->view->no_download = (int) $hashDoc->no_download;
-        $images = $hashDoc->getImages();
+        $images                  = $hashDoc->getImages();
         // Creating a set of "tickets" to view images related to current hash
         $ticket = new Unsee_Ticket();
 
@@ -240,6 +240,8 @@ class ViewController extends Zend_Controller_Action
 
         $this->view->welcomeMessage = $message;
         $this->view->hash           = $hashDoc->key;
+
+        $this->view->report = '<li><a id="report" href="report/">Take down this page</a></li>';
 
         return true;
     }
