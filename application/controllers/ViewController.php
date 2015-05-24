@@ -93,13 +93,11 @@ class ViewController extends Zend_Controller_Action
             if ($field === 'ttl') {
                 // Delete after view?
                 if ($value == 0) {
-                    $hashDoc->max_views = 1;
-                    $expireAt           = $hashDoc->timestamp + Unsee_Redis::EXP_DAY;
+                    $expireAt = $hashDoc->timestamp + Unsee_Redis::EXP_DAY;
                     // Set to expire within a day after upload
                 } elseif ($hashDoc->isValidTtl($value)) {
                     // @todo check if this is even used - added/checked
-                    $hashDoc->max_views = 0;
-                    $expireAt           = $hashDoc->timestamp + $value;
+                    $expireAt = $hashDoc->timestamp + $value;
                 }
             }
 
@@ -203,12 +201,6 @@ class ViewController extends Zend_Controller_Action
         // If viewer is the creator - don't count their view
         if (!Unsee_Session::isOwner($hashDoc)) {
             $hashDoc->views++;
-
-            // Reached max views for this hash
-            if ($hashDoc->max_views && $hashDoc->views >= $hashDoc->max_views) {
-                // Remove the hash in a while for the images to be displayed
-                $hashDoc->expireAt(time() + 30);
-            }
         } else {
             // Owner - include extra webpage assets
             $this->view->headScript()->appendFile('js/settings.js');
@@ -478,14 +470,14 @@ class ViewController extends Zend_Controller_Action
         // Download restricted
         if ($hashDoc->no_download) {
             $this->getResponse()->setHeader('Content-type', 'text/json');
-            $imgDoc = new Unsee_Image_Encrypted($imgDoc);
-            $imgDoc->setPassphrase('test');
+            $imgDocEnc = new Unsee_Image_Encrypted($imgDoc);
+            $imgDocEnc->setPassphrase('test');
 
-            $salt = bin2hex($imgDoc->salt);
-            $iv   = bin2hex($imgDoc->iv);
+            $salt = bin2hex($imgDocEnc->salt);
+            $iv   = bin2hex($imgDocEnc->iv);
 
             $data = array(
-                "ct" => $imgDoc->getImageContent(),
+                "ct" => $imgDocEnc->getImageContent(),
                 "iv" => $iv,
                 "s"  => $salt
             );

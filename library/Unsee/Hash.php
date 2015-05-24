@@ -24,7 +24,6 @@ class Unsee_Hash extends Unsee_Redis
             $this->setNewHash();
             $this->timestamp              = time();
             $this->ttl                    = -1;
-            $this->max_views              = 1;
             $this->views                  = 0;
             $this->no_download            = true;
             $this->strip_exif             = true;
@@ -155,7 +154,7 @@ class Unsee_Hash extends Unsee_Redis
     public function isViewable()
     {
         $exists  = $this->exists();
-        $viewsOk = !$this->max_views || $this->max_views > $this->views;
+        $viewsOk = $this->ttl > 0 || (int) $this->views === 0; // Not a single-view image or wasn't viewed yet
         $ttlOk   = $this->getTtl() > 0;
 
         return $exists && $viewsOk && $ttlOk;

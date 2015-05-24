@@ -48,7 +48,6 @@ class UploadController extends Zend_Controller_Action
                     $hashDoc = new Unsee_Hash();
 
                     if ($hashDoc->isValidTtl($_POST['time'])) {
-                        $hashDoc->max_views = 0;
                         $hashDoc->ttl       = (int) $_POST['time'];
                     } else {
                         throw new Exception($translate->translate('error_uploading'));

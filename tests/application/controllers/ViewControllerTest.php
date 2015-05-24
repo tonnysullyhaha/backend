@@ -74,7 +74,6 @@ class ViewControllerTest extends Zend_Test_PHPUnit_ControllerTestCase
     {
         $hash = $this->upload();
         $hash->ttl = 'hour';
-        $hash->max_views = 0;
 
         $this->dispatch('/view/index/hash/' . $hash->key . '/');
         $this->assertResponseCode(200);
