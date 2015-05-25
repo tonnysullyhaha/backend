@@ -9,10 +9,13 @@ class ReportController extends Zend_Controller_Action
     public function hashAction()
     {
 
-        $hash = $this->getParam('hash');
-        $hashDoc = new Unsee_Hash($hash);
-
-        $hashDoc->delete();
+        try {
+            $hash    = $this->getParam('hash');
+            $hashDoc = new Unsee_Hash($hash);
+            $hashDoc->delete();
+        } catch (Exception $e) {
+            // Don't care
+        }
 
         $this->redirect('/' . $hash . '/');
     }
