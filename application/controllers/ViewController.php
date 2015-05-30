@@ -378,10 +378,9 @@ class ViewController extends Zend_Controller_Action
         } elseif (!empty($images[$prevImage])) {
             $keys      = array_keys($images);
             $prevIndex = array_search($prevImage, $keys);
-            $notLast   = $prevIndex < count($images) - 1;
+            $nextKey   = $keys[$prevIndex + 1];
 
-            if ($notLast) {
-                $nextKey     = $keys[$prevIndex + 1];
+            if (isset($images[$nextKey])) {
                 $targetImage = $images[$nextKey];
             }
         }
