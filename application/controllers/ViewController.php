@@ -387,6 +387,8 @@ class ViewController extends Zend_Controller_Action
         }
 
         if ($targetImage) {
+            $ticket = new Unsee_Ticket();
+            $ticket->issue($targetImage);
             $return['ttd']   = $targetImage->secureTtd;
             $return['md5']   = $targetImage->secureMd5;
             $return['key']   = $targetImage->key;
