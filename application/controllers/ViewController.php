@@ -232,7 +232,7 @@ class ViewController extends Zend_Controller_Action
 
         $this->view->welcomeMessage = $message;
         $this->view->hash           = $hashDoc->key;
-        $this->view->report = '<li><a id="report" href="/' . $hashDoc->key . '/report/">Take this page down</a></li>';
+        $this->view->report         = '<li><a id="report" href="/' . $hashDoc->key . '/report/">Take this page down</a></li>';
 
         return true;
     }
