@@ -232,8 +232,7 @@ class ViewController extends Zend_Controller_Action
 
         $this->view->welcomeMessage = $message;
         $this->view->hash           = $hashDoc->key;
-
-        $this->view->report = '<li><a id="report" href="report/">Take this page down</a></li>';
+        $this->view->report = '<li><a id="report" href="/' . $hashDoc->key . '/report/">Take this page down</a></li>';
 
         return true;
     }
@@ -378,10 +377,9 @@ class ViewController extends Zend_Controller_Action
         } elseif (!empty($images[$prevImage])) {
             $keys      = array_keys($images);
             $prevIndex = array_search($prevImage, $keys);
-            $nextKey   = $keys[$prevIndex + 1];
 
-            if (isset($images[$nextKey])) {
-                $targetImage = $images[$nextKey];
+            if (isset($keys[$prevIndex + 1])) {
+                $targetImage = $images[$keys[$prevIndex + 1]];
             }
         }
 
