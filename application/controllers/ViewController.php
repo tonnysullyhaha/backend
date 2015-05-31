@@ -400,6 +400,7 @@ class ViewController extends Zend_Controller_Action
      */
     public function imageAction()
     {
+        sleep(1);
         // We would just print out the image, no need for the renderer
         $this->_helper->layout()->disableLayout();
         $this->_helper->viewRenderer->setNoRender(true);
