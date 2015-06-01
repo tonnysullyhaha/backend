@@ -355,12 +355,14 @@ class ViewController extends Zend_Controller_Action
      */
     public function nextImageAction()
     {
-        $prevImage = $this->getRequest()->getParam('prev', false);
+        $nextImage = $this->getRequest()->getParam('next', false);
         $hash      = $this->getRequest()->getParam('hash');
 
         if (!$hash) {
             die('No hash provided');
         }
+
+        // Use next instead of prev
 
         $hashDoc     = new Unsee_Hash($hash);
         $images      = $hashDoc->getImages();
@@ -372,24 +374,28 @@ class ViewController extends Zend_Controller_Action
             $this->_helper->json($return);
         }
 
-        if (!$prevImage) {
+        if ($nextImage == 'first') {
             $targetImage = current($images);
-        } elseif (!empty($images[$prevImage])) {
-            $keys      = array_keys($images);
-            $prevIndex = array_search($prevImage, $keys);
-
-            if (isset($keys[$prevIndex + 1])) {
-                $targetImage = $images[$keys[$prevIndex + 1]];
-            }
+        } elseif (!empty($images[$nextImage])) {
+            $targetImage = $images[$nextImage];
         }
 
         if ($targetImage) {
+            $nextTarget = null;
+            $keys       = array_keys($images);
+            $position   = array_search($nextImage, $keys);
+
+            if (!empty($keys[$position + 1])) {
+                $nextTarget = $keys[$position + 1];
+            }
+
             $ticket = new Unsee_Ticket();
             $ticket->issue($targetImage);
             $return['ttd']   = $targetImage->secureTtd;
             $return['md5']   = $targetImage->secureMd5;
             $return['key']   = $targetImage->key;
             $return['width'] = $targetImage->width;
+            $return['next']  = $nextTarget;
         }
 
         $this->_helper->json($return);
@@ -400,7 +406,6 @@ class ViewController extends Zend_Controller_Action
      */
     public function imageAction()
     {
-        sleep(1);
         // We would just print out the image, no need for the renderer
         $this->_helper->layout()->disableLayout();
         $this->_helper->viewRenderer->setNoRender(true);

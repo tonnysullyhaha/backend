@@ -1,5 +1,4 @@
-# docker run -d -p 9000:9000 -v `pwd`/:/var/www/unsee/:ro  backend
-
+# docker run -it --rm --memory=256m --memory-swap=0 --cpu-shares=80 --rm --name backend1 -p 9000:9000 -v `pwd`/:/var/www/unsee/:ro backend
 backend:
   build: .
   volumes:
