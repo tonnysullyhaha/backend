@@ -114,4 +114,14 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
         $ttls = Zend_Registry::get('config')->ttl->toArray();
         Zend_Registry::set('ttls', $ttls);
     }
+
+    /**
+     * Adds backend IP to response headers
+     *
+     * @author Michael Gorianskyi <michael.gorianskyi@westwing.de>
+     */
+    protected function _initBackendIpHeader()
+    {
+        header('X-Backend-Ip: ' . $_SERVER['SERVER_ADDR']);
+    }
 }
