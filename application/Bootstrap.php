@@ -122,6 +122,6 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
      */
     protected function _initBackendIpHeader()
     {
-        header('X-Backend-Ip: ' . $_SERVER['SERVER_ADDR']);
+        header('X-Backend: ' . gethostname());
     }
 }
