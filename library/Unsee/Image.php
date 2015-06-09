@@ -101,7 +101,7 @@ class Unsee_Image extends Unsee_Redis
 
         // @todo Should be in config
         $image->setCompression(Imagick::COMPRESSION_JPEG2000);
-        $image->setCompressionQuality(85);
+        $image->setCompressionQuality(92);
 
         $image->stripimage();
         $image->setImageFormat('jpeg');
