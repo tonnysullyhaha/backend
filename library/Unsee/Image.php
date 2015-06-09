@@ -88,7 +88,7 @@ class Unsee_Image extends Unsee_Redis
         $info        = getimagesize($filePath);
         $imageWidth  = $info[0];
         $imageHeight = $info[1];
-        $maxSize     = 1920; // @todo Should be either in config or dynamically set
+        $maxSize     = 1000; // @todo Should be either in config or dynamically set
         $image       = $this->getImagick();
         $image->readimage($filePath);
         $image->setResourceLimit(Imagick::RESOURCETYPE_MEMORY, 1);
