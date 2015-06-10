@@ -108,8 +108,8 @@ class Unsee_Image extends Unsee_Redis
 
         $this->size    = filesize($filePath);
         $this->type    = $info['mime'];
-        $this->width   = $imageWidth;
-        $this->height  = $imageHeight;
+        $this->width   = $image->getImageWidth();
+        $this->height  = $image->getImageHeight();
         $this->content = $image->getImageBlob();
         $this->expireAt(time() + static::EXP_DAY);
 
