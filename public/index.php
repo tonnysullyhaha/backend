@@ -35,5 +35,5 @@ $application->bootstrap();
 
 $application->run();
 
-Unsee_Timer::stop(Unsee_Timer::LOG_REQUEST);
+Unsee_Timer::stop(Unsee_Timer::LOG_REQUEST, $_SERVER['REQUEST_URI']);
 Unsee_Timer::cut();

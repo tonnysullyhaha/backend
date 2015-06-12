@@ -41,6 +41,10 @@ class Unsee_Timer
 
     const LOG_DB_KEYS          = 'Getting KEYS';
 
+    const LOG_BOOT             = 'Bootstrapping';
+
+    const LOG_CON_HASH         = 'Hash controller';
+
     const LOG_REQUEST          = 'Request time';
 
     const PRECISION            = 3;

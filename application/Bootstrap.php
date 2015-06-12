@@ -4,6 +4,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
 {
     protected function _initEnv()
     {
+        Unsee_Timer::start(Unsee_Timer::LOG_BOOT);
         if (empty($_SERVER['REMOTE_ADDR'])) {
             $_SERVER['REMOTE_ADDR'] = '127.0.0.1';
         }
@@ -123,5 +124,7 @@ class Bootstrap extends Zend_Application_Bootstrap_Bootstrap
     protected function _initBackendIpHeader()
     {
         header('X-Backend: ' . gethostname());
+
+        Unsee_Timer::stop(Unsee_Timer::LOG_BOOT);
     }
 }

@@ -116,6 +116,8 @@ class ViewController extends Zend_Controller_Action
      */
     public function indexAction()
     {
+
+        Unsee_Timer::start(Unsee_Timer::LOG_CON_HASH);
         // Hash (bababa)
         $hashString = $this->getParam('hash', false);
 
@@ -139,17 +141,22 @@ class ViewController extends Zend_Controller_Action
             // Register a block flag for current session
             $block->$sessionId = time();
 
+            Unsee_Timer::stop(Unsee_Timer::LOG_CON_HASH, 'Blocked');
+
             // Act as if the image was deleted
             return $this->deletedAction();
         }
 
         // The block flag was previously set for the current session
         if (isset($block->$sessionId)) {
+            Unsee_Timer::stop(Unsee_Timer::LOG_CON_HASH, 'Blocked');
+
             return $this->deletedAction();
         }
 
         // It was already deleted/did not exist/expired
         if (!$hashDoc->isViewable($hashDoc)) {
+            Unsee_Timer::stop(Unsee_Timer::LOG_CON_HASH, 'Not viewable');
             $hashDoc->delete();
 
             return $this->deletedAction();
@@ -162,6 +169,8 @@ class ViewController extends Zend_Controller_Action
             // Check again after settings change
             // It was already deleted/did not exist/expired
             if (!$hashDoc->isViewable($hashDoc)) {
+                Unsee_Timer::stop(Unsee_Timer::LOG_CON_HASH, 'Not viewable');
+
                 return $this->deletedAction();
             }
         }
@@ -192,6 +201,8 @@ class ViewController extends Zend_Controller_Action
             $method = 'process' . implode('', $key);
 
             if (method_exists($this, $method) && !$this->$method()) {
+                Unsee_Timer::stop(Unsee_Timer::LOG_CON_HASH, 'Setting not processed?');
+
                 return $this->deletedAction();
             }
         }
@@ -233,6 +244,8 @@ class ViewController extends Zend_Controller_Action
         $this->view->welcomeMessage = $message;
         $this->view->hash           = $hashDoc->key;
         $this->view->report         = '<li><a id="report" href="/' . $hashDoc->key . '/report/">Take this page down</a></li>';
+
+        Unsee_Timer::stop(Unsee_Timer::LOG_CON_HASH);
 
         return true;
     }
@@ -374,6 +387,10 @@ class ViewController extends Zend_Controller_Action
 
         // No images in the hash, empty return
         if (!$images) {
+            Unsee_Timer::stop(Unsee_Timer::LOG_IMG_NEXT, 'No images!');
+            Unsee_Timer::stop(Unsee_Timer::LOG_REQUEST, $_SERVER['REQUEST_URI']);
+            Unsee_Timer::cut();
+
             $this->_helper->json($return);
         }
 
@@ -402,6 +419,8 @@ class ViewController extends Zend_Controller_Action
         }
 
         Unsee_Timer::stop(Unsee_Timer::LOG_IMG_NEXT);
+        Unsee_Timer::stop(Unsee_Timer::LOG_REQUEST, $_SERVER['REQUEST_URI']);
+        Unsee_Timer::cut();
 
         $this->_helper->json($return);
     }

@@ -88,9 +88,9 @@ class Unsee_Redis
     {
         $this->selectDb(false);
 
-        Unsee_Timer::start(Unsee_Timer::LOG_DB_GET);
+        //Unsee_Timer::start(Unsee_Timer::LOG_DB_GET);
         $res = $this->redisSlave->hGet($this->key, $hKey);
-        Unsee_Timer::stop(Unsee_Timer::LOG_DB_GET, $hKey);
+        //Unsee_Timer::stop(Unsee_Timer::LOG_DB_GET, $hKey);
 
         return $res;
     }
@@ -107,9 +107,9 @@ class Unsee_Redis
     {
         $this->selectDb();
 
-        Unsee_Timer::start(Unsee_Timer::LOG_DB_SET);
+        //Unsee_Timer::start(Unsee_Timer::LOG_DB_SET);
         $res = $this->redisMaster->hSet($this->key, $hKey, $value);
-        Unsee_Timer::stop(Unsee_Timer::LOG_DB_SET, $hKey);
+        //Unsee_Timer::stop(Unsee_Timer::LOG_DB_SET, $hKey);
 
         return $res;
     }
@@ -124,9 +124,9 @@ class Unsee_Redis
         $type   = $useMaster ? 'Master' : 'Slave';
         $server = 'redis' . $type;
 
-        Unsee_Timer::start(Unsee_Timer::LOG_DB_SELECT);
+        //Unsee_Timer::start(Unsee_Timer::LOG_DB_SELECT);
         $this->$server->select(static::DB);
-        Unsee_Timer::stop(Unsee_Timer::LOG_DB_SELECT, static::DB);
+        //Unsee_Timer::stop(Unsee_Timer::LOG_DB_SELECT, static::DB);
 
         return true;
     }
@@ -146,9 +146,9 @@ class Unsee_Redis
 
         $this->selectDb(false);
 
-        Unsee_Timer::start(Unsee_Timer::LOG_DB_EXISTS);
+        //Unsee_Timer::start(Unsee_Timer::LOG_DB_EXISTS);
         $res = $this->redisSlave->hLen($this->key) > 0;
-        Unsee_Timer::stop(Unsee_Timer::LOG_DB_EXISTS, $key);
+        //Unsee_Timer::stop(Unsee_Timer::LOG_DB_EXISTS, $key);
 
         return $res;
     }
@@ -162,9 +162,9 @@ class Unsee_Redis
     {
         $this->selectDb();
 
-        Unsee_Timer::start(Unsee_Timer::LOG_DB_DEL);
+        //Unsee_Timer::start(Unsee_Timer::LOG_DB_DEL);
         $this->redisMaster->delete($this->key);
-        Unsee_Timer::stop(Unsee_Timer::LOG_DB_DEL);
+        //Unsee_Timer::stop(Unsee_Timer::LOG_DB_DEL);
 
         return true;
     }
@@ -179,9 +179,9 @@ class Unsee_Redis
 
         $this->selectDb(false);
 
-        Unsee_Timer::start(Unsee_Timer::LOG_DB_EXPORT);
+        //Unsee_Timer::start(Unsee_Timer::LOG_DB_EXPORT);
         $res = $this->redisSlave->hGetAll($this->key);
-        Unsee_Timer::start(Unsee_Timer::LOG_DB_EXPORT, $this->key);
+        //Unsee_Timer::start(Unsee_Timer::LOG_DB_EXPORT, $this->key);
 
         return $res;
     }
@@ -205,9 +205,9 @@ class Unsee_Redis
     {
         $this->selectDb();
 
-        Unsee_Timer::start(Unsee_Timer::LOG_DB_EXPIRE);
+        //Unsee_Timer::start(Unsee_Timer::LOG_DB_EXPIRE);
         $res = $this->redisMaster->expireAt($this->key, $time);
-        Unsee_Timer::stop(Unsee_Timer::LOG_DB_EXPIRE, $this->key);
+        //Unsee_Timer::stop(Unsee_Timer::LOG_DB_EXPIRE, $this->key);
 
         return $res;
     }
@@ -216,9 +216,9 @@ class Unsee_Redis
     {
         $this->selectDb();
 
-        Unsee_Timer::start(Unsee_Timer::LOG_DB_TTL);
+        //Unsee_Timer::start(Unsee_Timer::LOG_DB_TTL);
         $res = $this->redisMaster->ttl($this->key);
-        Unsee_Timer::stop(Unsee_Timer::LOG_DB_TTL, $this->key);
+        //Unsee_Timer::stop(Unsee_Timer::LOG_DB_TTL, $this->key);
 
         return $res;
     }
@@ -229,9 +229,9 @@ class Unsee_Redis
         $redis->select(static::DB);
         self::$prevDbSlave = static::DB;
 
-        Unsee_Timer::start(Unsee_Timer::LOG_DB_KEYS);
+        //Unsee_Timer::start(Unsee_Timer::LOG_DB_KEYS);
         $res = $redis->keys($keys);
-        Unsee_Timer::stop(Unsee_Timer::LOG_DB_KEYS, $keys);
+        //Unsee_Timer::stop(Unsee_Timer::LOG_DB_KEYS, $keys);
 
         return $res;
     }
