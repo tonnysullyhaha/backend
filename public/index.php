@@ -1,4 +1,6 @@
 <?php
+require_once ('../library/Unsee/Timer.php');
+Unsee_Timer::start(Unsee_Timer::LOG_REQUEST);
 
 // Define path to application directory
 defined('APPLICATION_PATH') || define('APPLICATION_PATH', realpath(dirname(__FILE__) . '/../application'));
@@ -27,4 +29,11 @@ require __DIR__ . '/../vendor/autoload.php';
 $resourceLoader = new Zend_Loader_Autoloader_Resource(array('basePath' => APPLICATION_PATH, 'namespace' => ''));
 // Create application, bootstrap, and run
 $application = new Zend_Application(APPLICATION_ENV, APPLICATION_PATH . '/configs/application.ini');
-$application->bootstrap()->run();
+$application->bootstrap();
+
+
+
+$application->run();
+
+Unsee_Timer::stop(Unsee_Timer::LOG_REQUEST);
+Unsee_Timer::cut();

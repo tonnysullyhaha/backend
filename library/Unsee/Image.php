@@ -81,7 +81,11 @@ class Unsee_Image extends Unsee_Redis
      */
     public function addFile($filePath)
     {
+        Unsee_Timer::start(Unsee_Timer::LOG_IMG_ADD_FILE);
+
         if (!file_exists($filePath)) {
+            Unsee_Timer::stop(Unsee_Timer::LOG_IMG_ADD_FILE, 'File does not exist');
+
             return false;
         }
 
@@ -90,28 +94,43 @@ class Unsee_Image extends Unsee_Redis
         $imageHeight = $info[1];
         $maxSize     = 1000; // @todo Should be either in config or dynamically set
         $image       = $this->getImagick();
-        $image->readimage($filePath);
+
         $image->setResourceLimit(Imagick::RESOURCETYPE_MEMORY, 1);
 
+        Unsee_Timer::start(Unsee_Timer::LOG_IMG_READ_FILE);
+        $image->readimage($filePath);
+        Unsee_Timer::stop(Unsee_Timer::LOG_IMG_READ_FILE);
+
+        Unsee_Timer::start(Unsee_Timer::LOG_IMG_RESIZE);
         if ($imageWidth > $maxSize && $imageWidth > $imageHeight) {
             $image->thumbnailimage($maxSize, null);
         } elseif ($imageHeight > $maxSize && $imageHeight > $imageWidth) {
             $image->thumbnailimage(null, $maxSize);
         }
+        Unsee_Timer::stop(Unsee_Timer::LOG_IMG_RESIZE);
 
         // @todo Should be in config
         $image->setCompression(Imagick::COMPRESSION_JPEG2000);
         $image->setCompressionQuality(92);
 
+        Unsee_Timer::start(Unsee_Timer::LOG_IMG_STRIP);
         $image->stripimage();
+        Unsee_Timer::stop(Unsee_Timer::LOG_IMG_STRIP);
+
         $image->setImageFormat('jpeg');
 
-        $this->size    = filesize($filePath);
-        $this->type    = $info['mime'];
-        $this->width   = $image->getImageWidth();
-        $this->height  = $image->getImageHeight();
+        $this->size   = filesize($filePath);
+        $this->type   = $info['mime'];
+        $this->width  = $image->getImageWidth();
+        $this->height = $image->getImageHeight();
+
+        Unsee_Timer::start(Unsee_Timer::LOG_IMG_READ_IM);
         $this->content = $image->getImageBlob();
+        Unsee_Timer::stop(Unsee_Timer::LOG_IMG_READ_IM);
+
         $this->expireAt(time() + static::EXP_DAY);
+
+        Unsee_Timer::stop(Unsee_Timer::LOG_IMG_ADD_FILE);
 
         return true;
     }
@@ -123,10 +142,13 @@ class Unsee_Image extends Unsee_Redis
      */
     protected function getImagick()
     {
+
         if (!$this->iMagick) {
             $iMagick = new Imagick();
             if ($this->content) {
+                Unsee_Timer::start(Unsee_Timer::LOG_IMG_CREATE_IM);
                 $iMagick->readimageblob($this->content);
+                Unsee_Timer::stop(Unsee_Timer::LOG_IMG_CREATE_IM);
             }
             $this->iMagick = $iMagick;
         }
@@ -141,7 +163,9 @@ class Unsee_Image extends Unsee_Redis
      */
     public function stripExif()
     {
+        Unsee_Timer::start(Unsee_Timer::LOG_IMG_STRIP);
         $this->getImagick()->stripImage();
+        Unsee_Timer::stop(Unsee_Timer::LOG_IMG_STRIP);
 
         return true;
     }
@@ -153,6 +177,8 @@ class Unsee_Image extends Unsee_Redis
      */
     public function watermark()
     {
+        Unsee_Timer::start(Unsee_Timer::LOG_IMG_WM);
+
         $text  = $_SERVER['REMOTE_ADDR'];
         $font  = $_SERVER['DOCUMENT_ROOT'] . '/pixel.ttf';
         $image = $this->getImagick();
@@ -179,6 +205,8 @@ class Unsee_Image extends Unsee_Redis
         $watermark->annotateimage($draw, round($watermarkSize / 1.9), round($watermarkSize / 1.2), -45, $text);
 
         $this->iMagick = $image->textureimage($watermark);
+
+        Unsee_Timer::stop(Unsee_Timer::LOG_IMG_WM);
 
         return true;
     }
@@ -211,7 +239,12 @@ class Unsee_Image extends Unsee_Redis
     public function getImageContent()
     {
         if ($this->iMagick) {
-            return $this->iMagick->getimageblob();
+
+            Unsee_Timer::start(Unsee_Timer::LOG_IMG_READ_IM);
+            $res = $this->iMagick->getimageblob();
+            Unsee_Timer::stop(Unsee_Timer::LOG_IMG_READ_IM);
+
+            return $res;
         } else {
             return $this->content;
         }

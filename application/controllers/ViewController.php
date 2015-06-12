@@ -355,10 +355,13 @@ class ViewController extends Zend_Controller_Action
      */
     public function nextImageAction()
     {
+        Unsee_Timer::start(Unsee_Timer::LOG_IMG_NEXT);
+
         $nextImage = $this->getRequest()->getParam('next', false);
         $hash      = $this->getRequest()->getParam('hash');
 
         if (!$hash) {
+            Unsee_Timer::stop(Unsee_Timer::LOG_IMG_NEXT, 'No hash provided');
             die('No hash provided');
         }
 
@@ -398,6 +401,8 @@ class ViewController extends Zend_Controller_Action
             $return['next']  = $nextTarget;
         }
 
+        Unsee_Timer::stop(Unsee_Timer::LOG_IMG_NEXT);
+
         $this->_helper->json($return);
     }
 
@@ -406,6 +411,7 @@ class ViewController extends Zend_Controller_Action
      */
     public function imageAction()
     {
+        Unsee_Timer::start(Unsee_Timer::LOG_IMG_NEXT_CONTENT);
         // We would just print out the image, no need for the renderer
         $this->_helper->layout()->disableLayout();
         $this->_helper->viewRenderer->setNoRender(true);
@@ -417,12 +423,16 @@ class ViewController extends Zend_Controller_Action
 
         // Dropping request if params are not right or the image is too old
         if (!$imageId || !$ticket || !$time || $time < time()) {
+            Unsee_Timer::stop(Unsee_Timer::LOG_IMG_NEXT_CONTENT, 'Params are not right');
+
             return $this->noContentAction();
         }
 
         list($hashStr, $imgKey) = explode('_', $imageId);
 
         if (!$hashStr) {
+            Unsee_Timer::stop(Unsee_Timer::LOG_IMG_NEXT_CONTENT, 'No hash string');
+
             return $this->noContentAction();
         }
 
@@ -430,6 +440,8 @@ class ViewController extends Zend_Controller_Action
         $hashDoc = new Unsee_Hash($hashStr);
 
         if (!$hashDoc) {
+            Unsee_Timer::stop(Unsee_Timer::LOG_IMG_NEXT_CONTENT, 'Hash does not exist');
+
             return $this->noContentAction();
         }
 
@@ -437,6 +449,8 @@ class ViewController extends Zend_Controller_Action
         $imgDoc = new Unsee_Image($hashDoc, $imgKey);
 
         if (!$imgDoc) {
+            Unsee_Timer::stop(Unsee_Timer::LOG_IMG_NEXT_CONTENT, 'Image doc does not exist');
+
             return $this->noContentAction();
         }
 
@@ -445,6 +459,8 @@ class ViewController extends Zend_Controller_Action
          * direct access. No referrer means direct access.
          */
         if ($hashDoc->no_download && empty($_SERVER['HTTP_REFERER'])) {
+            Unsee_Timer::stop(Unsee_Timer::LOG_IMG_NEXT_CONTENT, 'No referrer');
+
             return $this->noContentAction();
         }
 
@@ -455,6 +471,8 @@ class ViewController extends Zend_Controller_Action
         if (!$ticketDoc->isAllowed($imgDoc) && $hashDoc->no_download) {
             // Delete the ticket
             $ticketDoc->invalidate($imgDoc);
+
+            Unsee_Timer::stop(Unsee_Timer::LOG_IMG_NEXT_CONTENT, 'Not allowed to view');
 
             return $this->noContentAction();
         } else {
@@ -498,5 +516,7 @@ class ViewController extends Zend_Controller_Action
             // This means the image should not be available, so delete it
             $imgDoc->delete();
         }
+
+        Unsee_Timer::stop(Unsee_Timer::LOG_IMG_NEXT_CONTENT);
     }
 }
